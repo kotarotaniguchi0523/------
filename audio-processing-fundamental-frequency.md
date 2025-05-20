@@ -32,138 +32,6 @@
 
   ![1747707632297](image/audio-processing-fundamental-frequency/1747707632297.png)
 
-## 基本周波数推定の定義
-<span style="color:#1f77b4">$$
-\begin{aligned}
-\color{#d62728}{T_0} &= \frac{1}{\color{#2ca02c}{f_1}} \\
-\color{#2ca02c}{\omega_1} &= 2\pi\,\color{#2ca02c}{f_1} \\
-\color{#2ca02c}{f_1} &= \frac{\color{#2ca02c}{\omega_1}}{2\pi} \\
-\color{#d62728}{T_0} &= \frac{2\pi}{\color{#2ca02c}{\omega_1}}
-\end{aligned}
-$$</span>
-
-- <span style="color:#d62728"><strong>$T_0$</strong></span>: 基本周期
-- <span style="color:#2ca02c"><strong>$f_1$</strong></span>: 基本周波数
-- <span style="color:#2ca02c"><strong>$\omega_1$</strong></span>: 基本角周波数
-
-$$
-y(t) = x(t) * h(t)
-$$
-
-$$
-Y(\omega) = X(\omega)H(\omega)
-$$
-
-$$
-x(t) = \sum_{n=-\infty}^{\infty} \delta(t - nT_0)
-$$
-
-$$
-X(\omega) = \sum_{n=-\infty}^{\infty} \delta(\omega - n\omega_0)
-$$
-<span style="color:#1f77b4">$$
-x(t) = \sum_{n=-\infty}^{\infty} \delta(t - n\color{#d62728}{T_0})
-$$
-
-$$
-X(\omega) = \sum_{n=-\infty}^{\infty} \delta(\omega - n\color{#2ca02c}{\omega_1})
-$$</span>
-
-問題は $T_0$ か $\omega_0$ を音声波形から推定すること
-
-## 余談：基本周波数の呼び名
-
-- 基本周波数は英語でFundamental frequencyと呼び，F0（エフゼロ）と発音する
-  - 調波構造の最初のピーク$\omega_0$に対応する
-- 音声にはその他にフォルマントと呼ばれる複数の共鳴周波数があり，それらはF1，F2と呼ばれる
-- F0はフォルマントとは全く異なるため最近呼び名が適切ではないことが議論に
-
-## 続・基本周波数の呼び名
-
-- 2015年にアメリカ音響学会が「F0はやめよう」と公式に発表
-- 対案は$f_o$（下付き文字のoはイタリックにしない）で，発音は「エフオー」．
-  - ぱっと見F0に似ており，読者もそこまで混乱しないのではないか，という配慮
-  - 英語についてはFundamental frequency of oscillationでoはoscillationから取っている
-- 知名度は低く現在もF0が使われている
-
-## 具体的な方法
-
-- かれこれ50年以上山のような方法が提案
-- コンセプトによりいくつかの方針に分岐
-  - クリーンな音声を分析したい
-  - 雑音がある環境の音声を分析したい
-  - 複数人が話している音声を分析したい
-  - 楽曲中のボーカルを分析したい
-
-ボコーダでは主にクリーン音声のための推定法を検討
-
-## クリーン音声のための方法
-
-- やっぱりこれも色々な方法に分岐
-  - $T_o$を求める（時間波形の特徴に注目）
-  - $\omega_o$を求める（パワースペクトルの特徴に注目）
-  - その他の特徴を活用（瞬時周波数など）
-
-![alt text](image.png)
-
-## 講義内で扱う方法
-
-- ゼロ交差法
-  - 派生：DIO，Harvest
-    - 一応Hrvetが一番強い。
-- 自己相関法
-  - 派生：相互相関法，YIN
-- ケプストラム法
-  - 派生：SWIPE
-- Deep neural networkを用いた方法
-  - CREPE
-- その他多数の方法が提案・利用
-
-派生はアルゴリズムが複雑なので割愛
-
-## ゼロ交差法
-
-[図: ゼロ交差法の処理フロー]
-
-## ゼロ交差法の問題
-
-- あくまで理論的なお話で実用性は皆無
-- ![1747708666848](image/audio-processing-fundamental-frequency/1747708666848.png)
-
-[図: 時間波形と基本周期の関係]
-
-複数のゼロクロスが存在
-ローパスフィルタで前処理すればOK
-ローパスフィルタのカットオフ設定にはF0が必要
-改良が必須：そしてDIOへ
-
-## 自己相関法
-
-[図: 自己相関法の処理フロー]
-
-## 自己相関関数の定義
-
-$r(\tau) = \int_{-\infty}^{\infty} x(t)x(t + \tau)dt$
-
-で与えられる。これは関数 $x(t)$ と、$\tau$ だけシフトした関数 $x(t + \tau)$ を乗じて面積を求めるものです。
-
-- 最大値は $\tau$ が0の時に生じます
-- 計算式は畳み込みに近く、計算機で実装するための計算量は $O(n^2)$ です
-
-## 自己相関法の考え方
-
-- 波形が周期的に繰り返すことに着目
-
-[図: 波形の周期性と自己相関の関係]
-
-$T_0$ シフトすると約4周期分の波形が（ほぼ）一致します。
-
-遅延を $\tau$ として2波形の積を積分すると：
-
-$r(\tau) = \int_{-\infty}^{\infty} x(t)x(t + \tau)dt$
-
-$\tau$ が0や $T_0$ においてピークを持ち、0以外でのピークの時刻が $T_0$ となります。
-
 ## ウィーナー=ヒンチンの定理
 
 端的に言えば「パワースペクトル $|X(\omega)|^2$ の逆フーリエ変換が自己相関関数 $r(\tau)$ になる」という定理です。
@@ -175,6 +43,26 @@ $$
 証明してみましょう（制限時間10分）
 
 - ヒント：フーリエ変換の公式等で複素共役に基づく関係性をいくつか利用します
+
+まずはフーリエ変換と逆変換を定義します。
+
+$X(\omega) = \int_{-\infty}^{\infty} x(t)e^{-j\omega t}dt$
+
+$x(t) = \frac{1}{2\pi}\int_{-\infty}^{\infty} X(\omega)e^{j\omega t}d\omega$
+
+逆変換時に $1/2\pi$ を乗じる形にします。
+
+$$
+\begin{align}
+r(\tau) &= \int_{-\infty}^{\infty} x(t)x(t + \tau)dt \\
+&= \int_{-\infty}^{\infty} x(t)\left(\frac{1}{2\pi}\int_{-\infty}^{\infty} e^{j\omega\tau}X(\omega)e^{j\omega t}d\omega\right) dt \\
+&= \frac{1}{2\pi}\int_{-\infty}^{\infty} X(\omega)\left(\int_{-\infty}^{\infty} x(t)e^{j\omega t}dt\right) e^{j\omega\tau}d\omega \\
+&= \frac{1}{2\pi}\int_{-\infty}^{\infty} X(\omega)X^*(\omega)e^{j\omega\tau}d\omega \\
+&= \frac{1}{2\pi}\int_{-\infty}^{\infty} |X(\omega)|^2e^{j\omega\tau}d\omega
+\end{align}
+$$
+
+ここでフーリエ変換の公式を利用し、負号が無い場合は複素共役となることを使いました。
 
 ## 自己相関の計算法
 
@@ -270,7 +158,7 @@ $\log|Y(\omega)| = \log|X(\omega)| + \log|H(\omega)|$
 - 端的に言えば「パワースペクトル$|X(\omega)|^2$の逆フーリエ変換が自己相関関数$r(\tau)$になる」という定理
 - $r(\tau) = \frac{1}{2\pi}\int_{-\infty}^{\infty}|X(\omega)|^2e^{j\omega t}d\omega$
 
-## 定理の証明
+## 定理の証明 by copilot
 
 まずはフーリエ変換と逆変換を定義します。
 
@@ -278,17 +166,38 @@ $X(\omega) = \int_{-\infty}^{\infty} x(t)e^{-j\omega t}dt$
 
 $x(t) = \frac{1}{2\pi}\int_{-\infty}^{\infty} X(\omega)e^{j\omega t}d\omega$
 
-逆変換時に $1/2\pi$ を乗じる形にします。
+逆変換時に $ 1/2\pi$ を乗じる形にします。
 
 ## 証明２
 
+自己相関関数 $r(	au)$ の定義です。信号 $x(t)$ と、時間 $\tau$ だけシフトした自身との類似度を表します。
 $$
 \begin{align}
-r(\tau) &= \int_{-\infty}^{\infty} x(t)x(t + \tau)dt \\
-&= \int_{-\infty}^{\infty} x(t)\left(\frac{1}{2\pi}\int_{-\infty}^{\infty} e^{j\omega\tau}X(\omega)e^{j\omega t}d\omega\right) dt \\
-&= \frac{1}{2\pi}\int_{-\infty}^{\infty} X(\omega)\left(\int_{-\infty}^{\infty} x(t)e^{j\omega t}dt\right) e^{j\omega\tau}d\omega \\
-&= \frac{1}{2\pi}\int_{-\infty}^{\infty} X(\omega)X^*(\omega)e^{j\omega\tau}d\omega \\
-&= \frac{1}{2\pi}\int_{-\infty}^{\infty} |X(\omega)|^2e^{j\omega\tau}d\omega
+r(\tau) &= \int_{-\infty}^{\infty} x(t)x(t + \tau)dt 
+\end{align}
+$$
+$x(t+\tau)$ をその逆フーリエ変換表現で置き換えます。
+$$
+\begin{align}
+&= \int_{-\infty}^{\infty} x(t)\\left(\\frac{1}{2\\pi}\\int_{-\infty}^{\infty} X(\\omega)e^{j\\omega (t + \\tau)}d\\omega\\right) dt
+\end{align}
+$$
+積分の順序を変更し、$e^{j\\omega (t + \\tau)} = e^{j\\omega t}e^{j\\omega \\tau}$ を利用して $e^{j\\omega \\tau}$ を外側の積分に出します。
+$$
+\begin{align}
+&= \\frac{1}{2\\pi}\\int_{-\infty}^{\infty} X(\\omega)e^{j\\omega \\tau}\\left(\\int_{-\infty}^{\infty} x(t)e^{j\\omega t}dt\\right) d\\omega
+\end{align}
+$$
+内側の積分 $\\int_{-\\infty}^{\\infty} x(t)e^{j\\omega t}dt$ は、$X(\\omega)$ のフーリエ変換の定義 $X(\\omega) = \\int x(t)e^{-j\\omega t}dt$ と比較すると、指数 $e$ の肩の $j\\omega t$ の符号が逆になっています。これは $X(\\omega)$ の複素共役 $X^*(\\omega)$ を意味します。
+$$
+\begin{align}
+&= \\frac{1}{2\\pi}\\int_{-\infty}^{\infty} X(\\omega)X^*(\\omega)e^{j\\omega \\tau}d\\omega
+\end{align}
+$$
+最後に、$X(\\omega)X^*(\\omega) = |X(\\omega)|^2$ （ある複素数とその共役の積は、その複素数の絶対値の2乗に等しい）という関係を用いて式を整理します。これがウィーナー・ヒンチンの定理です。
+$$
+\begin{align}
+&= \\frac{1}{2\\pi}\\int_{-\infty}^{\infty} |X(\\omega)|^2e^{j\\omega \\tau}d\\omega
 \end{align}
 $$
 
