@@ -27,26 +27,47 @@
 [図: 声帯振動と基本周期、スペクトル包絡の関係を示す図]
 
 - 声帯振動の揺らぎや雑音混入による影響
+
   - 非周期性指標
 
+  ![1747707632297](image/audio-processing-fundamental-frequency/1747707632297.png)
+
 ## 基本周波数推定の定義
-
-$$
+<span style="color:#1f77b4">$$
 \begin{aligned}
-T_0 &= \frac{1}{f_1} \\
-\omega_1 &= 2\pi f_1 \\
-f_1 &= \frac{\omega_1}{2\pi} \\
-T_0 &= \frac{2\pi}{\omega}
+\color{#d62728}{T_0} &= \frac{1}{\color{#2ca02c}{f_1}} \\
+\color{#2ca02c}{\omega_1} &= 2\pi\,\color{#2ca02c}{f_1} \\
+\color{#2ca02c}{f_1} &= \frac{\color{#2ca02c}{\omega_1}}{2\pi} \\
+\color{#d62728}{T_0} &= \frac{2\pi}{\color{#2ca02c}{\omega_1}}
 \end{aligned}
+$$</span>
+
+- <span style="color:#d62728"><strong>$T_0$</strong></span>: 基本周期
+- <span style="color:#2ca02c"><strong>$f_1$</strong></span>: 基本周波数
+- <span style="color:#2ca02c"><strong>$\omega_1$</strong></span>: 基本角周波数
+
+$$
+y(t) = x(t) * h(t)
 $$
 
-$y(t) = x(t) * h(t)$
+$$
+Y(\omega) = X(\omega)H(\omega)
+$$
 
-$Y(\omega) = X(\omega)H(\omega)$
+$$
+x(t) = \sum_{n=-\infty}^{\infty} \delta(t - nT_0)
+$$
 
-$x(t) = \sum_{n=-\infty}^{\infty} \delta(t - nT_0)$
+$$
+X(\omega) = \sum_{n=-\infty}^{\infty} \delta(\omega - n\omega_0)
+$$
+<span style="color:#1f77b4">$$
+x(t) = \sum_{n=-\infty}^{\infty} \delta(t - n\color{#d62728}{T_0})
+$$
 
-$X(\omega) = \sum_{n=-\infty}^{\infty} \delta(\omega - n\omega_0)$
+$$
+X(\omega) = \sum_{n=-\infty}^{\infty} \delta(\omega - n\color{#2ca02c}{\omega_1})
+$$</span>
 
 問題は $T_0$ か $\omega_0$ を音声波形から推定すること
 
@@ -83,12 +104,13 @@ $X(\omega) = \sum_{n=-\infty}^{\infty} \delta(\omega - n\omega_0)$
   - $\omega_o$を求める（パワースペクトルの特徴に注目）
   - その他の特徴を活用（瞬時周波数など）
 
-[図: 時間波形とパワースペクトルの例]
+![alt text](image.png)
 
 ## 講義内で扱う方法
 
 - ゼロ交差法
   - 派生：DIO，Harvest
+    - 一応Hrvetが一番強い。
 - 自己相関法
   - 派生：相互相関法，YIN
 - ケプストラム法
@@ -106,6 +128,7 @@ $X(\omega) = \sum_{n=-\infty}^{\infty} \delta(\omega - n\omega_0)$
 ## ゼロ交差法の問題
 
 - あくまで理論的なお話で実用性は皆無
+- ![1747708666848](image/audio-processing-fundamental-frequency/1747708666848.png)
 
 [図: 時間波形と基本周期の関係]
 
